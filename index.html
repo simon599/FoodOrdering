@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant</title>
+    
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* Custom Styles & Animations */
+        body { font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+        
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        @keyframes slideUp {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes zoomIn {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        @keyframes fadeInDown {
+            from { transform: translate(-50%, -1rem); opacity: 0; }
+            to { transform: translate(-50%, 0); opacity: 1; }
+        }
+
+        .animate-slide-up { animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @media (min-width: 640px) {
+            .sm\:animate-zoom-in { animation: zoomIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        }
+        .animate-fade-in-down { animation: fadeInDown 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+        /* Hide elements dynamically */
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 pb-24 lg:pb-0">
+
+    <!-- HEADER -->
+    <header class="bg-white shadow-sm sticky top-0 z-30">
+        <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <div class="bg-orange-500 p-2 rounded-lg text-white flex items-center justify-center w-9 h-9">
+                    <i class="fa-solid fa-utensils text-sm"></i>
+                </div>
+                <h1 class="text-xl font-bold text-gray-900 tracking-tight">Family Kitchen</h1>
+            </div>
+            
+            <button onclick="toggleCart(true)" class="relative p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500">
+                <i class="fa-solid fa-cart-shopping text-xl"></i>
+                <span id="cart-badge" class="hidden absolute top-0 right-0 bg-orange-500 text-white text-xs font-bold h-5 w-5 flex items-center justify-center rounded-full border-2 border-white">
+                    0
+                </span>
+            </button>
+        </div>
+
+        <!-- CATEGORY TABS -->
+        <div class="border-t border-gray-100 bg-white">
+            <div class="max-w-6xl mx-auto px-4">
+                <div id="tabs-container" class="flex space-x-2 overflow-x-auto py-3 scrollbar-hide no-scrollbar items-center">
+                    <!-- Tabs injected by JS -->
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- SUCCESS TOAST -->
+    <div id="success-toast" class="hidden fixed top-24 left-1/2 transform -translate-x-1/2 z-50 bg-green-500 text-white px-6 py-3 rounded-full shadow-lg items-center gap-2 animate-fade-in-down">
+        <i class="fa-solid fa-check"></i>
+        <span class="font-medium">Order sent! Check your email app.</span>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <main class="max-w-6xl mx-auto px-4 py-8">
+        <div id="menu-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Menu items injected by JS -->
+        </div>
+        
+        <div id="empty-state" class="hidden text-center py-20 text-gray-500">
+            <i class="fa-solid fa-utensils text-5xl mx-auto mb-4 opacity-20"></i>
+            <p>No items found in this category.</p>
+        </div>
+    </main>
+
+    <!-- CUSTOMIZATION MODAL (Hidden by default) -->
+    <div id="modal-backdrop" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+        <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" onclick="closeModal()"></div>
+        
+        <div id="modal-content" class="relative bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-full flex flex-col overflow-hidden animate-slide-up sm:animate-zoom-in">
+            <!-- Modal injected by JS -->
+        </div>
+    </div>
+
+    <!-- CART SIDEBAR -->
+    <div id="cart-backdrop" class="hidden fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-40 transition-opacity" onclick="toggleCart(false)"></div>
+    
+    <div id="cart-sidebar" class="fixed top-0 right-0 h-full w-full sm:w-[400px] bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out flex flex-col translate-x-full">
+        <div class="p-5 flex items-center justify-between border-b border-gray-100 shrink-0">
+            <h2 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+                <i class="fa-solid fa-cart-shopping text-orange-500"></i> Your Order
+            </h2>
+            <button onclick="toggleCart(false)" class="p-2 text-gray-400 hover:text-gray-800 hover:bg-gray-100 rounded-full transition-colors w-10 h-10 flex items-center justify-center">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+        </div>
+
+        <div id="cart-items-container" class="flex-1 overflow-y-auto p-5">
+            <!-- Cart items injected by JS -->
+        </div>
+
+        <div id="cart-footer" class="hidden p-5 border-t border-gray-100 bg-gray-50 shrink-0">
+            <form onsubmit="submitOrder(event)" class="space-y-4">
+                <div>
+                    <label for="customerName" class="block text-sm font-medium text-gray-700 mb-1">Who is this order for?</label>
+                    <input type="text" id="customerName" required placeholder="e.g. Dad, Sarah, etc." class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-shadow">
+                </div>
+                <button type="submit" class="w-full bg-orange-500 text-white py-4 rounded-xl font-bold text-lg hover:bg-orange-600 transition-colors shadow-md shadow-orange-500/30 flex items-center justify-center gap-2">
+                    Place Order
+                </button>
+                <p class="text-xs text-center text-gray-400">Your order will be sent straight to the chef!</p>
+            </form>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // --- MOCK DATA ---
+        const MENU_DATA = [
+            {
+                id: 'a1', name: 'Homemade Dumplings', category: 'Asian',
+                description: 'Hand-folded dumplings served with a soy-vinegar dipping sauce.',
+                image: 'https://images.unsplash.com/photo-1496116218417-1a781b1c416c?auto=format&fit=crop&q=80&w=800',
+                customizations: [
+                    { id: 'filling', name: 'Filling', options: ['Pork & Cabbage', 'Chicken & Mushroom', 'Vegetarian'], required: true },
+                    { id: 'style', name: 'Cooking Style', options: ['Pan-Fried (Potstickers)', 'Steamed', 'Boiled'], required: true },
+                    { id: 'sauce', name: 'Extra Chili Oil', options: ['Yes Please!', 'No Thanks'], required: false }
+                ]
+            },
+            {
+                id: 'a2', name: 'Special Fried Rice', category: 'Asian',
+                description: 'Wok-tossed rice with egg, peas, carrots, and savory soy sauce.',
+                image: 'https://images.unsplash.com/photo-1603133872878-684f208fb84b?auto=format&fit=crop&q=80&w=800',
+                customizations: [
+                    { id: 'protein', name: 'Protein', options: ['Chicken', 'Shrimp', 'Tofu', 'Just Veggies'], required: true },
+                    { id: 'spice', name: 'Spice Level', options: ['Mild', 'Medium', 'Spicy', 'Extra Spicy'], required: true },
+                    { id: 'onions', name: 'Green Onions', options: ['Include', 'No Green Onions'], required: false }
+                ]
+            },
+            {
+                id: 'i1', name: 'Classic Lasagna', category: 'Italian',
+                description: 'Layers of pasta, rich meat sauce, ricotta, and melted mozzarella.',
+                image: 'https://images.unsplash.com/photo-1574894709920-11b28e7367e3?auto=format&fit=crop&q=80&w=800',
+                customizations: [
+                    { id: 'cheese', name: 'Extra Cheese', options: ['Normal', 'Extra Parmesan', 'Extra Mozzarella'], required: false },
+                    { id: 'temp', name: 'Serving Temp', options: ['Hot & Ready', 'Cold (To heat up later)'], required: true }
+                ]
+            },
+            {
+                id: 'i2', name: 'Garlic Bread', category: 'Italian',
+                description: 'Crispy toasted baguette slices with garlic butter and herbs.',
+                image: 'https://images.unsplash.com/photo-1573140247632-f8fd74997d5c?auto=format&fit=crop&q=80&w=800',
+                customizations: [
+                    { id: 'cheese', name: 'Add Cheese?', options: ['No Cheese', 'Add Mozzarella'], required: true }
+                ]
+            },
+            {
+                id: 'd1', name: 'Fresh Lemonade', category: 'Drinks',
+                description: 'Squeezed fresh today with a hint of mint.',
+                image: 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&q=80&w=800',
+                customizations: [
+                    { id: 'ice', name: 'Ice Level', options: ['Regular Ice', 'Light Ice', 'No Ice'], required: true },
+                    { id: 'sweet', name: 'Sweetness', options: ['Regular', 'Half Sweet', 'Unsweetened'], required: true }
+                ]
+            },
+            {
+                id: 's1', name: 'Warm Fudge Brownie', category: 'Desserts',
+                description: 'Gooey chocolate brownie, best served warm.',
+                image: 'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&q=80&w=800',
+                customizations: [
+                    { id: 'topping', name: 'Toppings', options: ['Vanilla Ice Cream', 'Whipped Cream', 'Powdered Sugar', 'None'], required: true },
+                    { id: 'warm', name: 'Preparation', options: ['Warm it up', 'Leave it room temp'], required: true }
+                ]
+            }
+        ];
+
+        const CATEGORIES = ['All', ...new Set(MENU_DATA.map(item => item.category))];
+        const ICONS = { 'Asian': 'fa-bowl-food', 'Italian': 'fa-pizza-slice', 'Drinks': 'fa-mug-hot', 'Desserts': 'fa-ice-cream', 'All': 'fa-utensils' };
+
+        // --- STATE ---
+        let cart = [];
+        let activeCategory = 'All';
+        let currentModalItem = null;
+        let currentModalQuantity = 1;
+        let currentModalSelections = {};
+
+        // --- DOM ELEMENTS ---
+        const tabsContainer = document.getElementById('tabs-container');
+        const menuContainer = document.getElementById('menu-container');
+        const emptyState = document.getElementById('empty-state');
+        const cartBadge = document.getElementById('cart-badge');
+        const modalBackdrop = document.getElementById('modal-backdrop');
+        const modalContent = document.getElementById('modal-content');
+        const cartSidebar = document.getElementById('cart-sidebar');
+        const cartBackdrop = document.getElementById('cart-backdrop');
+        const cartItemsContainer = document.getElementById('cart-items-container');
+        const cartFooter = document.getElementById('cart-footer');
+        const successToast = document.getElementById('success-toast');
+
+        // --- INITIALIZE APP ---
+        function init() {
+            renderTabs();
+            renderMenu();
+            renderCart();
+        }
+
+        // --- RENDER FUNCTIONS ---
+        function renderTabs() {
+            tabsContainer.innerHTML = CATEGORIES.map(category => {
+                const iconClass = ICONS[category] || 'fa-utensils';
+                const isActive = activeCategory === category;
+                const baseClasses = "flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium transition-all";
+                const activeClasses = isActive ? "bg-orange-500 text-white shadow-md" : "bg-gray-100 text-gray-600 hover:bg-gray-200";
+                const iconColor = isActive ? "text-white" : "text-gray-500";
+                
+                return `
+                    <button onclick="setCategory('${category}')" class="${baseClasses} ${activeClasses}">
+                        <i class="fa-solid ${iconClass} ${iconColor}"></i>
+                        ${category}
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function setCategory(category) {
+            activeCategory = category;
+            renderTabs();
+            renderMenu();
+        }
+
+        function renderMenu() {
+            const filteredMenu = activeCategory === 'All' ? MENU_DATA : MENU_DATA.filter(item => item.category === activeCategory);
+            
+            if (filteredMenu.length === 0) {
+                menuContainer.innerHTML = '';
+                emptyState.classList.remove('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+                menuContainer.innerHTML = filteredMenu.map(item => `
+                    <div onclick="openModal('${item.id}')" class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow cursor-pointer overflow-hidden border border-gray-100 group flex flex-col">
+                        <div class="relative h-48 overflow-hidden bg-gray-200">
+                            <img src="${item.image}" alt="${item.name}" onerror="this.src='https://via.placeholder.com/800x600?text=Delicious+Food'" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"/>
+                            <div class="absolute top-3 right-3 bg-white/90 backdrop-blur text-xs font-bold px-2 py-1 rounded-md text-gray-700 uppercase tracking-wider">
+                                ${item.category}
+                            </div>
+                        </div>
+                        <div class="p-5 flex-1 flex flex-col">
+                            <h3 class="text-xl font-bold text-gray-900 mb-2">${item.name}</h3>
+                            <p class="text-gray-500 text-sm line-clamp-2 mb-4 flex-1">${item.description}</p>
+                            <div class="flex items-center justify-between mt-auto">
+                                <span class="text-sm font-medium text-orange-500 flex items-center gap-1">
+                                    Customize <i class="fa-solid fa-chevron-right text-xs"></i>
+                                </span>
+                                <button class="bg-gray-900 text-white w-10 h-10 rounded-full hover:bg-gray-800 transition-colors flex items-center justify-center">
+                                    <i class="fa-solid fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // --- MODAL LOGIC ---
+        function openModal(itemId) {
+            currentModalItem = MENU_DATA.find(i => i.id === itemId);
+            currentModalQuantity = 1;
+            currentModalSelections = {};
+            
+            // Set defaults
+            if (currentModalItem.customizations) {
+                currentModalItem.customizations.forEach(cust => {
+                    currentModalSelections[cust.id] = cust.options[0];
+                });
+            }
+
+            renderModalContent();
+            modalBackdrop.classList.remove('hidden');
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        }
+
+        function closeModal() {
+            modalBackdrop.classList.add('hidden');
+            document.body.style.overflow = 'unset';
+            currentModalItem = null;
+        }
+
+        function updateModalQuantity(delta) {
+            currentModalQuantity = Math.max(1, currentModalQuantity + delta);
+            document.getElementById('modal-qty-display').innerText = currentModalQuantity;
+        }
+
+        function selectOption(customizationId, optionValue) {
+            currentModalSelections[customizationId] = optionValue;
+            renderModalContent(); // Re-render to update selected styles
+        }
+
+        function renderModalContent() {
+            if (!currentModalItem) return;
+
+            let customizationsHTML = '';
+            if (currentModalItem.customizations) {
+                customizationsHTML = currentModalItem.customizations.map(cust => `
+                    <div class="mb-6">
+                        <h4 class="font-bold text-gray-900 mb-3 flex items-center justify-between">
+                            ${cust.name}
+                            ${cust.required ? '<span class="text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded">Required</span>' : ''}
+                        </h4>
+                        <div class="space-y-2">
+                            ${cust.options.map(option => {
+                                const isSelected = currentModalSelections[cust.id] === option;
+                                const borderClass = isSelected ? 'border-orange-500 bg-orange-50' : 'border-gray-200 hover:border-orange-300';
+                                return `
+                                    <label class="flex items-center p-3 rounded-xl border cursor-pointer transition-colors ${borderClass}">
+                                        <input type="radio" name="${cust.id}" value="${option}" ${isSelected ? 'checked' : ''} 
+                                               onchange="selectOption('${cust.id}', '${option}')"
+                                               class="w-5 h-5 text-orange-500 border-gray-300 focus:ring-orange-500">
+                                        <span class="ml-3 text-gray-800 font-medium">${option}</span>
+                                    </label>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            modalContent.innerHTML = `
+                <div class="relative h-48 sm:h-56 shrink-0">
+                    <img src="${currentModalItem.image}" alt="${currentModalItem.name}" class="w-full h-full object-cover">
+                    <button onclick="closeModal()" class="absolute top-4 right-4 bg-white/80 backdrop-blur w-10 h-10 flex items-center justify-center rounded-full text-gray-800 hover:bg-white transition-colors">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none"></div>
+                    <h2 class="absolute bottom-4 left-5 text-2xl font-bold text-white pr-4">${currentModalItem.name}</h2>
+                </div>
+                <div class="p-5 overflow-y-auto flex-1">
+                    <p class="text-gray-600 text-sm mb-6">${currentModalItem.description}</p>
+                    ${customizationsHTML}
+                </div>
+                <div class="p-5 border-t border-gray-100 bg-gray-50 shrink-0">
+                    <div class="flex items-center gap-4">
+                        <div class="flex items-center bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm h-14">
+                            <button onclick="updateModalQuantity(-1)" class="p-3 text-gray-500 w-12 hover:text-gray-900 hover:bg-gray-50 transition-colors">
+                                <i class="fa-solid fa-minus"></i>
+                            </button>
+                            <span id="modal-qty-display" class="w-10 text-center font-bold text-lg">${currentModalQuantity}</span>
+                            <button onclick="updateModalQuantity(1)" class="p-3 text-gray-500 w-12 hover:text-gray-900 hover:bg-gray-50 transition-colors">
+                                <i class="fa-solid fa-plus"></i>
+                            </button>
+                        </div>
+                        <button onclick="addToCart()" class="flex-1 bg-orange-500 text-white h-14 rounded-xl font-bold text-lg hover:bg-orange-600 transition-colors shadow-md shadow-orange-500/30 flex items-center justify-center gap-2">
+                            Add to Order
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- CART LOGIC ---
+        function toggleCart(isOpen) {
+            if (isOpen) {
+                cartSidebar.classList.remove('translate-x-full');
+                cartBackdrop.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            } else {
+                cartSidebar.classList.add('translate-x-full');
+                cartBackdrop.classList.add('hidden');
+                document.body.style.overflow = 'unset';
+            }
+        }
+
+        function addToCart() {
+            // Check if exact same item exists
+            const existingIndex = cart.findIndex(cartItem => {
+                if (cartItem.id !== currentModalItem.id) return false;
+                return JSON.stringify(cartItem.selections) === JSON.stringify(currentModalSelections);
+            });
+
+            if (existingIndex >= 0) {
+                cart[existingIndex].quantity += currentModalQuantity;
+            } else {
+                cart.push({
+                    ...currentModalItem,
+                    quantity: currentModalQuantity,
+                    selections: { ...currentModalSelections },
+                    cartItemId: Date.now().toString()
+                });
+            }
+
+            closeModal();
+            renderCart();
+            toggleCart(true); // Open cart to show user it was added
+        }
+
+        function removeFromCart(cartItemId) {
+            cart = cart.filter(item => item.cartItemId !== cartItemId);
+            renderCart();
+        }
+
+        function renderCart() {
+            const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
+            
+            // Update badge in header
+            if (totalItems > 0) {
+                cartBadge.classList.remove('hidden');
+                cartBadge.innerText = totalItems;
+            } else {
+                cartBadge.classList.add('hidden');
+            }
+
+            // Update cart body
+            if (cart.length === 0) {
+                cartFooter.classList.add('hidden');
+                cartItemsContainer.innerHTML = `
+                    <div class="h-full flex flex-col items-center justify-center text-gray-400 space-y-4">
+                        <i class="fa-solid fa-utensils text-6xl opacity-20"></i>
+                        <p class="text-lg">Your order is empty</p>
+                        <button onclick="toggleCart(false)" class="text-orange-500 font-medium hover:underline">Browse Menu</button>
+                    </div>
+                `;
+            } else {
+                cartFooter.classList.remove('hidden');
+                cartItemsContainer.innerHTML = `<div class="space-y-6">` + cart.map(item => {
+                    let custHTML = '';
+                    if (item.customizations && item.customizations.length > 0) {
+                        custHTML = `<ul class="text-sm text-gray-500 mt-1 space-y-1">` + 
+                            item.customizations.map(cust => `<li><span class="text-gray-400">${cust.name}:</span> ${item.selections[cust.id]}</li>`).join('') + 
+                        `</ul>`;
+                    }
+
+                    return `
+                        <div class="flex gap-4">
+                            <div class="w-10 h-10 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center font-bold shrink-0">
+                                ${item.quantity}x
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="font-bold text-gray-900">${item.name}</h4>
+                                ${custHTML}
+                            </div>
+                            <button onclick="removeFromCart('${item.cartItemId}')" class="text-gray-300 hover:text-red-500 p-1 self-start transition-colors">
+                                <i class="fa-solid fa-xmark text-lg"></i>
+                            </button>
+                        </div>
+                    `;
+                }).join('') + `</div>`;
+            }
+        }
+
+        // --- CHECKOUT LOGIC ---
+        async function submitOrder(event) {
+            event.preventDefault();
+            const customerName = document.getElementById('customerName').value;
+            const submitButton = event.target.querySelector('button[type="submit"]');
+            
+            if (!customerName.trim() || cart.length === 0) return;
+
+            // Show a loading state on the button
+            const originalButtonText = submitButton.innerHTML;
+            submitButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending...';
+            submitButton.disabled = true;
+
+            // 1. Format email body
+            let emailBody = `New Order from: ${customerName}\n\n`;
+            emailBody += `--- ORDER DETAILS ---\n\n`;
+            
+            cart.forEach(item => {
+                emailBody += `${item.quantity}x ${item.name}\n`;
+                if (item.customizations && item.customizations.length > 0) {
+                    item.customizations.forEach(cust => {
+                        emailBody += `   - ${cust.name}: ${item.selections[cust.id]}\n`;
+                    });
+                }
+                emailBody += `\n`;
+            });
+
+            // 2. Setup Formspree background sending
+            // IMPORTANT: REPLACE THIS URL with your unique Formspree Endpoint URL!
+            const formEndpoint = "https://formspree.io/f/mgonvngy";
+
+            try {
+                // This talks to Formspree silently in the background
+                const response = await fetch(formEndpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name: customerName,
+                        subject: `New Kitchen Order from ${customerName}`,
+                        message: emailBody
+                    })
+                });
+
+                if (response.ok) {
+                    // 3. Clear cart & show success pop-up
+                    cart = [];
+                    document.getElementById('customerName').value = '';
+                    renderCart();
+                    toggleCart(false);
+                    
+                    successToast.classList.remove('hidden');
+                    successToast.style.display = 'flex';
+                    setTimeout(() => {
+                        successToast.classList.add('hidden');
+                        successToast.style.display = 'none';
+                    }, 5000);
+                } else {
+                    alert("Oops! There was a problem sending the order. Did you put your Formspree endpoint URL in the code?");
+                }
+            } catch (error) {
+                alert("Network error. Please try again.");
+            } finally {
+                // Restore the button back to normal
+                submitButton.innerHTML = originalButtonText;
+                submitButton.disabled = false;
+            }
+        }
+
+        // Start app
+        init();
+
+    </script>
+</body>
+</html>
